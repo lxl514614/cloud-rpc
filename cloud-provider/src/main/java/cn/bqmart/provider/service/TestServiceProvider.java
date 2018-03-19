@@ -3,6 +3,7 @@ package cn.bqmart.provider.service;
 import cn.bqmart.api.test.TestService;
 import cn.bqmart.domain.TbStudent;
 import cn.bqmart.provider.dao.TestDao;
+import cn.bqmart.util.cache.RedisUtil;
 import com.alibaba.dubbo.config.annotation.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,10 +56,14 @@ public class TestServiceProvider implements TestService {
     @Override
     public TbStudent findStudent(Integer id) {
 
-        LOGGER.info("add student is start! id:{}", id);
+        LOGGER.info("find student is start! id:{}", id);
         ValueOperations<String, TbStudent> operations = redisTemplate.opsForValue();
 
         TbStudent student = new TbStudent();
+
+//        RedisUtil.set("redisTest", "this is test");
+
+//        LOGGER.info("set redis==>");
 
         boolean hasKey = redisTemplate.hasKey("test"+id);
         if (!hasKey) {
@@ -70,7 +75,8 @@ public class TestServiceProvider implements TestService {
             student = operations.get("test"+id);
             LOGGER.info("TestServiceProvider.addStudent() : 获取学生信息缓存 >> student:{}", student.toString() );
         }
-
+//        String redisRes = (String) RedisUtil.get("redisTest");
+//        LOGGER.info("get redis==>{}", redisRes);
         return student;
     }
 }

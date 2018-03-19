@@ -2,6 +2,7 @@ package cn.bqmart.util.cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -22,14 +23,15 @@ import java.util.regex.Pattern;
  */
 public class RedisUtil {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RedisUtil.class);
 
     /**
      * 出异常，重复操作的次数
      */
     private static Integer times = 5;
 
-    @Resource(name="redisTemplate")
+//    @Resource(name="redisTemplate")
+    @Autowired
     private static RedisTemplate redisTemplate;
 
     /**
@@ -39,7 +41,7 @@ public class RedisUtil {
      */
     public static double getCreateTimeScore(long date) {
 
-        return 0;
+        return date / 100000.0;
     }
 
     /**
@@ -56,7 +58,7 @@ public class RedisUtil {
      * 获取所有的普通key-value
      * @return
      */
-    public Map<String, Object> getAllString() {
+    public static Map<String, Object> getAllString() {
         Set<String> stringSet = getAllKeys();
         Map<String, Object> map = new HashMap<>();
         Iterator<String> iterator = stringSet.iterator();
@@ -74,7 +76,7 @@ public class RedisUtil {
      * 获取所有的Set -key-value
      * @return
      */
-    public Map<String, Set<Object>> getAllSet() {
+    public static Map<String, Set<Object>> getAllSet() {
         Set<String> stringSet = getAllKeys();
         Map<String,Set<Object>> map = new HashMap<>();
         Iterator<String> iterator = stringSet.iterator();
@@ -92,7 +94,7 @@ public class RedisUtil {
      * 获取所有的ZSet倒序  -key-value 不获取权重值
      * @return
      */
-    public Map<String, Set<Object>> getAllZSetRange() {
+    public static Map<String, Set<Object>> getAllZSetRange() {
         Set<String> stringSet = getAllKeys();
         Map<String, Set<Object>> map = new HashMap<>();
         Iterator<String> iterator = stringSet.iterator();
@@ -110,7 +112,7 @@ public class RedisUtil {
      * 获取所有的ZSet正序  -key-value 不获取权重值
      * @return
      */
-    public Map<String, Set<Object>> getAllZSetReverseRange() {
+    public static Map<String, Set<Object>> getAllZSetReverseRange() {
         Set<String> stringSet = getAllKeys();
         Map<String, Set<Object>> map = new HashMap<String, Set<Object>>();
         Iterator<String> iterator = stringSet.iterator();
@@ -127,7 +129,7 @@ public class RedisUtil {
      * 获取所有的List -key-value
      * @return
      */
-    public Map<String, List<Object>> getAllList() {
+    public static Map<String, List<Object>> getAllList() {
         Set<String> stringSet = getAllKeys();
         Map<String, List<Object>> map = new HashMap<String, List<Object>>();
         Iterator<String> iterator = stringSet.iterator();
@@ -144,7 +146,7 @@ public class RedisUtil {
      * 获取所有的Map -key-value
      * @return
      */
-    public Map<String, Map<String, Object>> getAllMap() {
+    public static Map<String, Map<String, Object>> getAllMap() {
         Set<String> stringSet = getAllKeys();
         Map<String, Map<String, Object>> map = new HashMap<>();
         Iterator<String> iterator = stringSet.iterator();
@@ -162,7 +164,7 @@ public class RedisUtil {
      * @param key
      * @param objectList
      */
-    public void addList(String key, List<Object> objectList) {
+    public static void addList(String key, List<Object> objectList) {
         for (Object obj : objectList) {
             addList(key,obj);
         }
@@ -174,7 +176,7 @@ public class RedisUtil {
      * @param obj
      * @return 返回在list中的下标
      */
-    public long addList(String key, Object... obj) {
+    public static long addList(String key, Object... obj) {
         return redisTemplate.boundListOps(key).rightPushAll(obj);
     }
 
@@ -184,7 +186,7 @@ public class RedisUtil {
      * @param obj
      * @return 返回在list中的下标
      */
-    public long addList(String key, Object obj) {
+    public static long addList(String key, Object obj) {
         return redisTemplate.boundListOps(key).rightPush(obj);
     }
 
@@ -196,7 +198,7 @@ public class RedisUtil {
      * @param e 结束的下标
      * @return
      */
-    public List<Object> getList(String key, long s, long e) {
+    public static List<Object> getList(String key, long s, long e) {
         return redisTemplate.boundListOps(key).range(s, e);
     }
 
@@ -204,7 +206,7 @@ public class RedisUtil {
      * 输出完整的list
      * @param key
      */
-    public List<Object> getList(String key) {
+    public static List<Object> getList(String key) {
         return redisTemplate.boundListOps(key).range(0, getListSize(key));
     }
 
@@ -213,7 +215,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public Long getListSize(String key) {
+    public static Long getListSize(String key) {
         return redisTemplate.boundListOps(key).size();
     }
 
@@ -226,7 +228,7 @@ public class RedisUtil {
      * @param object
      * @return 返回移除数量
      */
-    public long removeListValue(String key, Object object) {
+    public static long removeListValue(String key, Object object) {
         return redisTemplate.boundListOps(key).remove(0, object);
     }
 
@@ -236,7 +238,7 @@ public class RedisUtil {
      * @param objects
      * @return 返回移除数量
      */
-    public long removeListValue(String key, Object ... objects) {
+    public static long removeListValue(String key, Object ... objects) {
         long r = 0;
         for (Object obj : objects) {
             r += removeListValue(key, obj);
@@ -248,7 +250,7 @@ public class RedisUtil {
      * 模糊移除 支持*号等匹配移除
      * @param key
      */
-    public void remove(String... key) {
+    public static void remove(String... key) {
         if (key != null && key.length > 0) {
             if (key.length == 1) {
                 remove(key[0]);
@@ -264,7 +266,7 @@ public class RedisUtil {
      * @param newKey
      * @return
      */
-    public Boolean renameIfAbsent(String oldKey, String newKey) {
+    public static Boolean renameIfAbsent(String oldKey, String newKey) {
         return redisTemplate.renameIfAbsent(oldKey, newKey);
     }
 
@@ -272,7 +274,7 @@ public class RedisUtil {
      * 模糊移除 支持*号等匹配移除
      * @param blear
      */
-    public void removeBlear(String blear) {
+    public static void removeBlear(String blear) {
         redisTemplate.delete(redisTemplate.keys(blear));
     }
 
@@ -280,7 +282,7 @@ public class RedisUtil {
      * 根据正则表达式来移除key-value
      * @param blears
      */
-    public void removeByRegular(String... blears) {
+    public static void removeByRegular(String... blears) {
         for (String blear : blears) {
             removeBlear(blear);
         }
@@ -290,7 +292,7 @@ public class RedisUtil {
      * 根据正则表达式来移除key-value
      * @param blear
      */
-    public void removeByRegular(String blear) {
+    public static void removeByRegular(String blear) {
         Set<String> stringSet = getAllKeys();
         for (String s : stringSet) {
             if (Pattern.compile(blear).matcher(s).matches()) {
@@ -304,7 +306,7 @@ public class RedisUtil {
      * @param key
      * @param blears
      */
-    public void removeMapFieldByRegular(String key, String... blears) {
+    public static void removeMapFieldByRegular(String key, String... blears) {
         for (String blear : blears) {
             removeMapFieldByRegular(key, blear);
         }
@@ -315,7 +317,7 @@ public class RedisUtil {
      * @param key
      * @param blear
      */
-    public void removeMapFieldByRegular(String key, String blear) {
+    public static void removeMapFieldByRegular(String key, String blear) {
         Map<String, Object> map = getMap(key);
         Set<String> stringSet = map.keySet();
         for (String s : stringSet) {
@@ -331,7 +333,7 @@ public class RedisUtil {
      * @param value
      * @return
      */
-    public Long removeZSetValue(String key, Object... value) {
+    public static Long removeZSetValue(String key, Object... value) {
         return redisTemplate.boundZSetOps(key).remove(value);
     }
 
@@ -340,7 +342,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public void removeZSet(String key) {
+    public static void removeZSet(String key) {
         removeZSetRange(key, 0L, getZSetSize(key));
     }
 
@@ -351,11 +353,11 @@ public class RedisUtil {
      * @param end
      * @return
      */
-    public void removeZSetRange(String key, Long start, Long end) {
+    public static void removeZSetRange(String key, Long start, Long end) {
         redisTemplate.boundZSetOps(key).removeRange(start, end);
     }
 
-    public void removeBlear(String... blears) {
+    public static void removeBlear(String... blears) {
         for (String blear : blears) {
             removeBlear(blear);
         }
@@ -369,7 +371,7 @@ public class RedisUtil {
      * @param key1
      * @param key2
      */
-    public void setZSetUnionAndStore(String key,String key1, String key2) {
+    public static void setZSetUnionAndStore(String key,String key1, String key2) {
         redisTemplate.boundZSetOps(key).unionAndStore(key1,key2);
     }
 
@@ -377,7 +379,7 @@ public class RedisUtil {
      * 获得整个set
      * @param key  对象key
      */
-    public Set<Object> getSet(String key) {
+    public static Set<Object> getSet(String key) {
         return redisTemplate.boundSetOps(key).members();
     }
 
@@ -385,7 +387,7 @@ public class RedisUtil {
      * 获取整个有序集合ZSET，正序
      * @param key
      */
-    public Set<Object> getZSetRange(String key) {
+    public static Set<Object> getZSetRange(String key) {
         return redisTemplate.boundSetOps(key).members();
     }
 
@@ -396,7 +398,7 @@ public class RedisUtil {
      * @param start 开始位置
      * @param end 结束位置
      */
-    public Set<Object> getZSetRange(String key, long start, long end) {
+    public static Set<Object> getZSetRange(String key, long start, long end) {
         return redisTemplate.boundZSetOps(key).range(start, end);
     }
 
@@ -405,7 +407,7 @@ public class RedisUtil {
      * 获取整个有序集合ZSET，倒序
      * @param key
      */
-    public Set<Object> getZSetReverseRange(String key) {
+    public static Set<Object> getZSetReverseRange(String key) {
         return getZSetReverseRange(key, 0, getZSetSize(key));
     }
 
@@ -416,7 +418,7 @@ public class RedisUtil {
      * @param start 开始位置
      * @param end 结束位置
      */
-    public Set<Object> getZSetReverseRange(String key, long start, long end) {
+    public static Set<Object> getZSetReverseRange(String key, long start, long end) {
         return redisTemplate.boundZSetOps(key).reverseRange(start, end);
     }
 
@@ -427,7 +429,7 @@ public class RedisUtil {
      * @param end
      * @return
      */
-    public Set<Object> getZSetRangeByScore(String key, double start, double end) {
+    public static Set<Object> getZSetRangeByScore(String key, double start, double end) {
         return redisTemplate.boundZSetOps(key).rangeByScore(start, end);
     }
 
@@ -438,7 +440,7 @@ public class RedisUtil {
      * @param end
      * @return
      */
-    public Set<Object> getZSetReverseRangeByScore(String key, double start, double end) {
+    public static Set<Object> getZSetReverseRangeByScore(String key, double start, double end) {
         return redisTemplate.boundZSetOps(key).reverseRangeByScore(start, end);
     }
 
@@ -450,7 +452,7 @@ public class RedisUtil {
      * @param end
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> getZSetRangeWithScores(String key, long start, long end) {
+    public static Set<ZSetOperations.TypedTuple<Object>> getZSetRangeWithScores(String key, long start, long end) {
         return redisTemplate.boundZSetOps(key).rangeWithScores(start, end);
     }
 
@@ -462,7 +464,7 @@ public class RedisUtil {
      * @param end
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> getZSetReverseRangeWithScores(String key, long start, long end) {
+    public static Set<ZSetOperations.TypedTuple<Object>> getZSetReverseRangeWithScores(String key, long start, long end) {
         return redisTemplate.boundZSetOps(key).reverseRangeWithScores(start, end);
     }
 
@@ -472,7 +474,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> getZSetRangeWithScores(String key) {
+    public static Set<ZSetOperations.TypedTuple<Object>> getZSetRangeWithScores(String key) {
         return getZSetRangeWithScores(key, 0, getZSetSize(key));
     }
 
@@ -482,7 +484,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public Set<ZSetOperations.TypedTuple<Object>> getZSetReverseRangeWithScores(String key) {
+    public static Set<ZSetOperations.TypedTuple<Object>> getZSetReverseRangeWithScores(String key) {
         return getZSetReverseRangeWithScores(key, 0, getZSetSize(key));
     }
 
@@ -493,7 +495,7 @@ public class RedisUtil {
      * @param sMax
      * @return
      */
-    public long getZSetCountSize(String key, double sMin, double sMax) {
+    public static long getZSetCountSize(String key, double sMin, double sMax) {
         return redisTemplate.boundZSetOps(key).count(sMin, sMax);
     }
 
@@ -502,7 +504,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public long getZSetSize(String key) {
+    public static long getZSetSize(String key) {
         return redisTemplate.boundZSetOps(key).size();
     }
 
@@ -512,7 +514,7 @@ public class RedisUtil {
      * @param value
      * @return
      */
-    public double getZSetScore(String key, Object value) {
+    public static double getZSetScore(String key, Object value) {
         return redisTemplate.boundZSetOps(key).score(value);
     }
 
@@ -523,7 +525,7 @@ public class RedisUtil {
      * @param delta
      * @return
      */
-    public double incrementZSetScore(String key, Object value, double delta) {
+    public static double incrementZSetScore(String key, Object value, double delta) {
         return redisTemplate.boundZSetOps(key).incrementScore(value, delta);
     }
 
@@ -535,7 +537,7 @@ public class RedisUtil {
      * @param value
      * @return
      */
-    public Boolean addZSet(String key, double score, Object value) {
+    public static Boolean addZSet(String key, double score, Object value) {
         return redisTemplate.boundZSetOps(key).add(value, score);
     }
 
@@ -545,7 +547,7 @@ public class RedisUtil {
      * @param value
      * @return
      */
-    public Long addZSet(String key, TreeSet<Object> value) {
+    public static Long addZSet(String key, TreeSet<Object> value) {
         return redisTemplate.boundZSetOps(key).add(value);
     }
 
@@ -556,7 +558,7 @@ public class RedisUtil {
      * @param value
      * @return
      */
-    public Boolean addZSet(String key, double[] score, Object[] value) {
+    public static Boolean addZSet(String key, double[] score, Object[] value) {
         if (score.length != value.length) {
             return false;
         }
@@ -573,7 +575,7 @@ public class RedisUtil {
      * 根据key精确匹配删除
      * @param key
      */
-    public void remove(String key) {
+    public static void remove(String key) {
         if (exists(key)) {
             redisTemplate.delete(key);
         }
@@ -584,7 +586,7 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public boolean exists(String key) {
+    public static boolean exists(String key) {
         return redisTemplate.hasKey(key);
     }
 
@@ -594,7 +596,7 @@ public class RedisUtil {
      * @param s
      * @param e
      */
-    public void removeZSetRangeByScore(String key,double s , double e) {
+    public static void removeZSetRangeByScore(String key,double s , double e) {
         redisTemplate.boundZSetOps(key).removeRangeByScore(s,e);
     }
 
@@ -604,7 +606,7 @@ public class RedisUtil {
      * @param time
      * @return
      */
-    public Boolean setSetExpireTime(String key, Long time) {
+    public static Boolean setSetExpireTime(String key, Long time) {
         return redisTemplate.boundSetOps(key).expire(time, TimeUnit.SECONDS);
     }
 
@@ -614,7 +616,7 @@ public class RedisUtil {
      * @param time
      * @return
      */
-    public Boolean setZSetExpireTime(String key, Long time) {
+    public static Boolean setZSetExpireTime(String key, Long time) {
         return redisTemplate.boundZSetOps(key).expire(time, TimeUnit.SECONDS);
     }
 
@@ -623,15 +625,15 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public DataType getType(String key) {
+    public static DataType getType(String key) {
         return redisTemplate.type(key);
     }
 
-    public Object get(int key) {
-        return this.get(String.valueOf(key));
+    public static Object get(int key) {
+        return get(String.valueOf(key));
     }
-    public Object get(long key) {
-        return this.get(String.valueOf(key));
+    public static Object get(long key) {
+        return get(String.valueOf(key));
     }
 
     /**
@@ -639,11 +641,11 @@ public class RedisUtil {
      * @param key
      * @return
      */
-    public Object get(String key) {
+    public static Object get(String key) {
         return redisTemplate.boundValueOps(key).get();
     }
 
-    public List<Object> get(String... keys) {
+    public static List<Object> get(String... keys) {
         List<Object> list = new ArrayList<Object>();
         for (String key : keys) {
             list.add(get(key));
@@ -656,7 +658,7 @@ public class RedisUtil {
      * @param regKey
      * @return
      */
-    public List<Object> getByRegular(String regKey) {
+    public static List<Object> getByRegular(String regKey) {
         Set<String> stringSet = getAllKeys();
         List<Object> objectList = new ArrayList<Object>();
         for (String s : stringSet) {
@@ -667,11 +669,11 @@ public class RedisUtil {
         return objectList;
     }
 
-    public void set(long key, Object value) {
-        this.set(String.valueOf(key) ,value);
+    public static void set(long key, Object value) {
+        set(String.valueOf(key) ,value);
     }
-    public void set(int key, Object value) {
-        this.set(String.valueOf(key) ,value);
+    public static void set(int key, Object value) {
+        set(String.valueOf(key) ,value);
     }
 
     /**
@@ -679,7 +681,7 @@ public class RedisUtil {
      * @param key
      * @param value
      */
-    public void set(String key, Object value) {
+    public static void set(String key, Object value) {
         redisTemplate.boundValueOps(key).set(value);
     }
 
@@ -690,7 +692,7 @@ public class RedisUtil {
      * @param expireTime 过期时间 -单位s
      * @return
      */
-    public void set(String key, Object value, Long expireTime) {
+    public static void set(String key, Object value, Long expireTime) {
         redisTemplate.boundValueOps(key).set(value, expireTime, TimeUnit.SECONDS);
     }
 
@@ -700,7 +702,7 @@ public class RedisUtil {
      * @param expireTime
      * @return
      */
-    public boolean setExpireTime(String key, Long expireTime) {
+    public static boolean setExpireTime(String key, Long expireTime) {
         return redisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
     }
 
@@ -709,7 +711,7 @@ public class RedisUtil {
      * @param key   map对应的key
      * @param field map中该对象的key
      */
-    public void removeMapField(String key, Object... field) {
+    public static void removeMapField(String key, Object... field) {
         redisTemplate.boundHashOps(key).delete(field);
     }
 
@@ -718,7 +720,7 @@ public class RedisUtil {
      * @param key map对应的key
      * @return
      */
-    public Long getMapSize(String key) {
+    public static Long getMapSize(String key) {
         return redisTemplate.boundHashOps(key).size();
     }
 
@@ -727,7 +729,7 @@ public class RedisUtil {
      * @param key map对应的key
      * @return
      */
-    public Map<String, Object> getMap(String key) {
+    public static Map<String, Object> getMap(String key) {
         return redisTemplate.boundHashOps(key).entries();
     }
 
@@ -737,7 +739,7 @@ public class RedisUtil {
      * @param field map中该对象的key
      * @return
      */
-    public <T> T getMapField(String key, String field) {
+    public static <T> T getMapField(String key, String field) {
         return (T) redisTemplate.boundHashOps(key).get(field);
     }
 
@@ -746,7 +748,7 @@ public class RedisUtil {
      * @param key map对应的key
      * @return
      */
-    public Boolean hasMapKey(String key, String field) {
+    public static Boolean hasMapKey(String key, String field) {
         return redisTemplate.boundHashOps(key).hasKey(field);
     }
 
@@ -755,7 +757,7 @@ public class RedisUtil {
      * @param key map对应的key
      * @return
      */
-    public List<Object> getMapFieldValue(String key) {
+    public static List<Object> getMapFieldValue(String key) {
         return redisTemplate.boundHashOps(key).values();
     }
 
@@ -764,7 +766,7 @@ public class RedisUtil {
      * @param key map对应的key
      * @return
      */
-    public Set<Object> getMapFieldKey(String key) {
+    public static Set<Object> getMapFieldKey(String key) {
         return redisTemplate.boundHashOps(key).keys();
     }
 
@@ -773,7 +775,7 @@ public class RedisUtil {
      * @param key
      * @param map
      */
-    public void addMap(String key, Map<String, Object> map) {
+    public static void addMap(String key, Map<String, Object> map) {
         redisTemplate.boundHashOps(key).putAll(map);
     }
 
@@ -783,7 +785,7 @@ public class RedisUtil {
      * @param field map对应的key
      * @param value     值
      */
-    public void addMap(String key, String field, Object value) {
+    public static void addMap(String key, String field, Object value) {
         redisTemplate.boundHashOps(key).put(field, value);
     }
 
@@ -794,7 +796,7 @@ public class RedisUtil {
      * @param time 过期时间-整个MAP的过期时间
      * @param value     值
      */
-    public void addMap(String key, String field, Object value, long time) {
+    public static void addMap(String key, String field, Object value, long time) {
         redisTemplate.boundHashOps(key).put(field, value);
         redisTemplate.boundHashOps(key).expire(time, TimeUnit.SECONDS);
     }
@@ -803,7 +805,7 @@ public class RedisUtil {
      * 处理事务时锁定key
      * @param key
      */
-    public void watch(String key) {
+    public static void watch(String key) {
         redisTemplate.watch(key);
     }
 
@@ -812,7 +814,7 @@ public class RedisUtil {
      * @param key  对象key
      * @param obj  值
      */
-    public void addSet(String key, Object... obj) {
+    public static void addSet(String key, Object... obj) {
         redisTemplate.boundSetOps(key).add(obj);
     }
 
@@ -821,7 +823,7 @@ public class RedisUtil {
      * @param key  对象key
      * @param obj  值
      */
-    public long removeSetValue(String key, Object obj) {
+    public static long removeSetValue(String key, Object obj) {
         return redisTemplate.boundSetOps(key).remove(obj);
     }
 
@@ -830,7 +832,7 @@ public class RedisUtil {
      * @param key  对象key
      * @param obj  值
      */
-    public long removeSetValue(String key, Object... obj) {
+    public static long removeSetValue(String key, Object... obj) {
         if (obj != null && obj.length > 0) {
             return redisTemplate.boundSetOps(key).remove(obj);
         }
@@ -841,7 +843,7 @@ public class RedisUtil {
      * 获取set的对象数
      * @param key  对象key
      */
-    public long getSetSize(String key) {
+    public static long getSetSize(String key) {
         return redisTemplate.boundSetOps(key).size();
     }
 
@@ -849,7 +851,7 @@ public class RedisUtil {
      * 判断set中是否存在这个值
      * @param key  对象key
      */
-    public Boolean hasSetValue(String key, Object obj) {
+    public static Boolean hasSetValue(String key, Object obj) {
         Boolean boo = null;
         int t =0;
         while (true){
@@ -874,7 +876,7 @@ public class RedisUtil {
      * @param otherKey
      * @return
      */
-    public Set<Object> getSetUnion(String key, String otherKey) {
+    public static Set<Object> getSetUnion(String key, String otherKey) {
         return redisTemplate.boundSetOps(key).union(otherKey);
     }
 
@@ -884,7 +886,7 @@ public class RedisUtil {
      * @param set
      * @return
      */
-    public Set<Object> getSetUnion(String key, Set<Object> set) {
+    public static Set<Object> getSetUnion(String key, Set<Object> set) {
         return redisTemplate.boundSetOps(key).union(set);
     }
 
@@ -894,7 +896,7 @@ public class RedisUtil {
      * @param otherKey
      * @return
      */
-    public Set<Object> getSetIntersect(String key, String otherKey) {
+    public static Set<Object> getSetIntersect(String key, String otherKey) {
         return redisTemplate.boundSetOps(key).intersect(otherKey);
     }
 
@@ -904,7 +906,7 @@ public class RedisUtil {
      * @param set
      * @return
      */
-    public Set<Object> getSetIntersect(String key, Set<Object> set) {
+    public static Set<Object> getSetIntersect(String key, Set<Object> set) {
         return redisTemplate.boundSetOps(key).intersect(set);
     }
 
