@@ -7,7 +7,11 @@ import com.alibaba.dubbo.config.annotation.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * TestServiceProvider
@@ -20,10 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TestServiceProvider implements TestService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestServiceProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestServiceProvider.class);
 
     @Autowired
     private TestDao testDao;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public String sayHell(String name) {
@@ -34,16 +41,36 @@ public class TestServiceProvider implements TestService {
     @Transactional
     public int addStudent(String name, Integer age) {
 
-        logger.info("add student is start! name:{}, age:{}", name, age);
+        LOGGER.info("add student is start! name:{}, age:{}", name, age);
 
+        boolean hasKey = redisTemplate.hasKey("test");
+        if (!hasKey) {
+            ValueOperations<String, String> operations = redisTemplate.opsForValue();
+            operations.set("test", name+"_"+age, 10, TimeUnit.SECONDS);
+            LOGGER.info("TestServiceProvider.addStudent() : 学生信息插入缓存 >> name:{}, age:{}" ,name, age );
+        }
         return testDao.add(name, age);
     }
 
     @Override
     public TbStudent findStudent(Integer id) {
 
-        logger.info("add student is start! id:{}", id);
+        LOGGER.info("add student is start! id:{}", id);
+        ValueOperations<String, TbStudent> operations = redisTemplate.opsForValue();
 
-        return testDao.findStudent(id);
+        TbStudent student = new TbStudent();
+
+        boolean hasKey = redisTemplate.hasKey("test"+id);
+        if (!hasKey) {
+            student = testDao.findStudent(id);
+            operations.set("test"+id, student, 10, TimeUnit.SECONDS);
+            LOGGER.info("TestServiceProvider.addStudent() : 学生信息插入缓存 >> student:{}", student.toString() );
+        }
+        else {
+            student = operations.get("test"+id);
+            LOGGER.info("TestServiceProvider.addStudent() : 获取学生信息缓存 >> student:{}", student.toString() );
+        }
+
+        return student;
     }
 }
